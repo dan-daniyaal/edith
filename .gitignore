@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Vosk wake-word model (~70 MB) — download link in README
+vosk-model*/
+
+# Personal / runtime state — never commit
+memory.md
+edith_state.json
+settings.json
+EDITH_SYSTEM_PROMPT.md
+knowledge/*
+!knowledge/.gitkeep
+screenshots/
+*.wav
+*.mp3
+
+# Windows shortcuts
+*.lnk

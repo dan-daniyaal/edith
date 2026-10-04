@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EDITH — Control Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --cyan:#3ae3ff; --cyan-dim:rgba(58,227,255,.55); --gold:#ffcf6a;
+  --txt:#e9f5ff; --txt2:#8da6c4; --ok:#46e6a0; --bad:#ff6b6b;
+  --glass:rgba(255,255,255,.055); --glass-brd:rgba(255,255,255,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Rajdhani',sans-serif;color:var(--txt);min-height:100vh;
+  background:#05070e;overflow-x:hidden;position:relative;
+}
+/* liquid-glass refraction source: slow-moving colored blobs behind the blur */
+.bg-blobs{position:fixed;inset:0;z-index:0;overflow:hidden;filter:blur(70px)}
+.blob{position:absolute;border-radius:50%;opacity:.5;mix-blend-mode:screen;animation:drift 22s ease-in-out infinite}
+.blob.a{width:480px;height:480px;background:#0e64ff;top:-120px;left:-80px}
+.blob.b{width:520px;height:520px;background:#00d9ff;bottom:-160px;right:-100px;animation-delay:-7s}
+.blob.c{width:360px;height:360px;background:#a06bff;top:40%;left:45%;animation-delay:-13s}
+.blob.d{width:300px;height:300px;background:#ffae3c;bottom:10%;left:10%;opacity:.3;animation-delay:-4s}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-40px) scale(1.12)}66%{transform:translate(-40px,50px) scale(.92)}}
+.grid-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(58,227,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(58,227,255,.05) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:radial-gradient(circle at 50% 40%,#000 30%,transparent 85%)}
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:26px 24px 60px}
+
+/* liquid glass panel */
+.glass{position:relative;background:var(--glass);border:1px solid var(--glass-brd);
+  border-radius:22px;backdrop-filter:blur(26px) saturate(165%);-webkit-backdrop-filter:blur(26px) saturate(165%);
+  box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.18);overflow:hidden}
+.glass::before{content:"";position:absolute;top:0;left:-60%;width:60%;height:100%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.13),transparent);
+  animation:sheen 7s ease-in-out infinite;pointer-events:none}
+@keyframes sheen{0%{left:-60%}55%,100%{left:130%}}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand .mark{font-family:'Orbitron';font-weight:700;font-size:30px;letter-spacing:5px;
+  color:#fff;text-shadow:0 0 18px var(--cyan-dim),0 0 4px var(--cyan)}
+.brand .sub{font-size:13px;letter-spacing:3px;color:var(--txt2);text-transform:uppercase}
+.pill{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border-radius:30px;
+  font-size:14px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--glass-brd);background:var(--glass)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--txt2);box-shadow:0 0 10px currentColor}
+.pill.live .dot{background:var(--ok);color:var(--ok)}
+.pill.live{color:var(--ok)}
+.btn{font-family:'Rajdhani';cursor:pointer;border-radius:14px;padding:11px 20px;font-size:15px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;color:var(--txt);background:var(--glass);
+  border:1px solid var(--glass-brd);transition:.18s;backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--cyan-dim);box-shadow:0 0 18px rgba(58,227,255,.25);color:#fff}
+.btn.primary{border-color:var(--cyan-dim);color:#bdf3ff}
+.btn.danger:hover{border-color:var(--bad);box-shadow:0 0 18px rgba(255,107,107,.3);color:#ffd5d5}
+
+.cols{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}
+@media(max-width:920px){.cols{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:20px}
+
+/* orb */
+.orbwrap{padding:30px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.orb{--c:var(--cyan);position:relative;width:190px;height:190px;border-radius:50%;display:grid;place-items:center}
+.orb .ring{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.orb .r1{border-top-color:var(--c);border-right-color:var(--c);animation:spin 4s linear infinite;opacity:.85}
+.orb .r2{inset:18px;border-bottom-color:var(--gold);border-left-color:var(--gold);animation:spin 6s linear infinite reverse;opacity:.6}
+.orb .core{width:108px;height:108px;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%,#dffaff,var(--c) 45%,#0a2740 100%);
+  box-shadow:0 0 40px var(--c),0 0 90px rgba(58,227,255,.35),inset 0 0 30px rgba(255,255,255,.4);
+  animation:breathe 3.4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.07);opacity:1}}
+.orb.listening{--c:#46e6a0}
+.orb.listening .core{animation:pulseR 1.5s ease-out infinite}
+@keyframes pulseR{0%{box-shadow:0 0 0 0 rgba(70,230,160,.5),0 0 40px #46e6a0}70%{box-shadow:0 0 0 34px rgba(70,230,160,0),0 0 50px #46e6a0}100%{box-shadow:0 0 0 0 rgba(70,230,160,0),0 0 40px #46e6a0}}
+.orb.thinking{--c:#ffcf6a}
+.orb.thinking .r1{animation-duration:1s}.orb.thinking .r2{animation-duration:1.4s}
+.orb.speaking{--c:#3ae3ff}
+.orb.speaking .core{animation:breathe 0.6s ease-in-out infinite}
+.orb.offline{--c:#54657d;filter:grayscale(.6) brightness(.7)}
+.orb.offline .r1,.orb.offline .r2{animation:none}
+.orb.offline .core{animation:none}
+.activity{font-family:'Orbitron';font-size:18px;letter-spacing:4px;text-transform:uppercase;color:var(--cyan)}
+.hint{font-size:14px;color:var(--txt2);letter-spacing:1px}
+
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:18px}
+.metric{background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:14px;padding:13px 16px}
+.metric .k{font-size:12px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase}
+.metric .v{font-family:'Orbitron';font-size:17px;margin-top:5px;color:#fff}
+
+.panel-h{font-family:'Orbitron';font-size:15px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--cyan);padding:18px 20px 0;display:flex;align-items:center;gap:9px}
+.convo{padding:14px 20px 20px;display:flex;flex-direction:column;gap:11px;max-height:320px;overflow-y:auto}
+.bub{max-width:82%;padding:10px 14px;border-radius:15px;font-size:15.5px;line-height:1.4}
+.bub.u{align-self:flex-end;background:rgba(58,227,255,.14);border:1px solid rgba(58,227,255,.25);color:#d6f6ff}
+.bub.e{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--glass-brd)}
+.empty{color:var(--txt2);font-size:14px;padding:8px 2px}
+
+.form{padding:6px 20px 22px}
+.field{margin-top:16px}
+.field label{display:block;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:7px}
+input[type=text],select,textarea{width:100%;font-family:'Rajdhani';font-size:15px;color:var(--txt);
+  background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);border-radius:12px;padding:10px 13px;outline:none}
+input[type=text]:focus,select,textarea:focus{border-color:var(--cyan-dim);box-shadow:0 0 0 3px rgba(58,227,255,.12)}
+textarea{min-height:96px;resize:vertical;line-height:1.5}
+select option{background:#0b1220}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.slider .top{display:flex;justify-content:space-between;font-size:13px;letter-spacing:1px;color:var(--txt2);margin-bottom:5px}
+.slider .top b{color:var(--cyan);font-family:'Orbitron';font-weight:500}
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:5px;
+  background:linear-gradient(90deg,var(--cyan),rgba(255,255,255,.1));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:#dffaff;box-shadow:0 0 12px var(--cyan);cursor:pointer;border:2px solid var(--cyan)}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:8px}
+.tog{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);
+  border:1px solid var(--glass-brd);border-radius:12px;padding:11px 14px;font-size:14.5px;letter-spacing:.5px}
+.tog.dis{opacity:.45}
+.sw{position:relative;width:44px;height:24px;border-radius:20px;background:rgba(255,255,255,.12);
+  border:1px solid var(--glass-brd);cursor:pointer;transition:.2s;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#9fb3cc;transition:.2s}
+.sw.on{background:rgba(58,227,255,.3);border-color:var(--cyan-dim)}
+.sw.on::after{left:22px;background:#dffaff;box-shadow:0 0 10px var(--cyan)}
+.actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:20px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(40px);z-index:50;
+  background:rgba(10,20,32,.9);border:1px solid var(--cyan-dim);color:#cdf5ff;padding:12px 22px;border-radius:14px;
+  letter-spacing:1px;opacity:0;transition:.3s;backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg-blobs"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div><div class="blob d"></div></div>
+<div class="grid-overlay"></div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div>
+        <div class="mark">EDITH</div>
+        <div class="sub">tactical assistant · control center</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="pill" id="statusPill"><span class="dot"></span><span id="statusTxt">offline</span></span>
+      <button class="btn primary" id="startBtn">Wake her</button>
+      <button class="btn danger" id="stopBtn">Stand down</button>
+    </div>
+  </header>
+
+  <div class="cols">
+    <div class="stack">
+      <div class="glass orbwrap">
+        <div class="orb offline" id="orb"><div class="ring r1"></div><div class="ring r2"></div><div class="core"></div></div>
+        <div class="activity" id="activity">offline</div>
+        <div class="hint" id="hint">say "Hey EDITH" to wake her</div>
+      </div>
+      <div class="glass metrics">
+        <div class="metric"><div class="k">wake word</div><div class="v" id="mWake">Hey EDITH</div></div>
+        <div class="metric"><div class="k">voice</div><div class="v" id="mVoice">Ava</div></div>
+        <div class="metric"><div class="k">brain</div><div class="v">Claude</div></div>
+        <div class="metric"><div class="k">listening</div><div class="v" id="mPriv">on-device</div></div>
+      </div>
+      <div class="glass">
+        <div class="panel-h"><i class="ti ti-message"></i>conversation</div>
+        <div class="convo" id="convo"><div class="empty">No conversation yet — wake her and say something.</div></div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="glass">
+        <div class="panel-h">settings</div>
+        <div class="form">
+          <div class="field"><label>persona / context</label><textarea id="persona"></textarea></div>
+          <div class="row2">
+            <div class="field"><label>voice</label><select id="voice"></select></div>
+            <div class="field"><label>wake phrase</label><input type="text" id="wake" /></div>
+          </div>
+          <div class="field slider"><div class="top"><span>wake sensitivity</span><b id="confOut">0.6</b></div>
+            <input type="range" id="conf" min="0.2" max="0.9" step="0.1" /></div>
+          <div class="field slider"><div class="top"><span>silence cutoff (ms)</span><b id="silOut">1000</b></div>
+            <input type="range" id="sil" min="500" max="2500" step="100" /></div>
+          <div class="field slider"><div class="top"><span>voice speed</span><b id="spdOut">0%</b></div>
+            <input type="range" id="spd" min="-25" max="25" step="5" /></div>
+          <div class="toggles">
+            <div class="tog">follow-up mode<div class="sw" data-k="WAKE_FOLLOWUP"></div></div>
+            <div class="tog">screen vision<div class="sw" data-k="ENABLE_SCREEN"></div></div>
+            <div class="tog">weather<div class="sw" data-k="ENABLE_WEATHER"></div></div>
+            <div class="tog dis">send email<div class="sw" title="Phase 2 — coming soon"></div></div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="saveBtn">Save settings</button>
+            <button class="btn" id="restartBtn">Save &amp; restart</button>
+          </div>
+        </div>
+      </div>
+      <div class="glass">
+        <div class="panel-h"><i class="ti ti-brain"></i>project memory</div>
+        <div class="form">
+          <div class="field"><textarea id="memory" style="min-height:120px"></textarea></div>
+          <div class="actions"><button class="btn" id="memSave">Save memory</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const api=(p,o)=>fetch(p,o).then(r=>r.json());
+let toggles={};
+
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1900);}
+
+function setActivity(a){
+  const orb=$('#orb'),map={offline:'offline',idle:'',listening:'listening',thinking:'thinking',speaking:'speaking'};
+  orb.className='orb '+(map[a]||'');
+  $('#activity').textContent=a;
+  const hints={offline:'she is not running — hit "wake her"',idle:'standing by — say "Hey EDITH"',listening:'listening for "Hey EDITH"…',thinking:'thinking…',speaking:'speaking…'};
+  $('#hint').textContent=hints[a]||'';
+}
+function renderConvo(h){
+  const c=$('#convo');
+  if(!h||!h.length){c.innerHTML='<div class="empty">No conversation yet — wake her and say something.</div>';return;}
+  c.innerHTML='';
+  h.forEach(t=>{
+    c.innerHTML+=`<div class="bub u">${esc(t.user)}</div><div class="bub e">${esc(t.edith)}</div>`;
+  });
+  c.scrollTop=c.scrollHeight;
+}
+function esc(s){return (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+
+async function poll(){
+  try{
+    const s=await api('/api/status');
+    const pill=$('#statusPill');
+    pill.classList.toggle('live',s.running);
+    $('#statusTxt').textContent=s.running?s.activity:'offline';
+    setActivity(s.running?s.activity:'offline');
+    renderConvo(s.history);
+    $('#mWake').textContent='Hey '+(s.wake_phrase||'edith').replace(/\b\w/g,c=>c.toUpperCase());
+  }catch(e){}
+}
+
+function voiceShort(id){const v=(window._voices||[]).find(v=>v.id===id);return v?v.label.split(' —')[0]:id;}
+
+async function loadSettings(){
+  const s=await api('/api/settings');
+  window._voices=s.voices;
+  const sel=$('#voice');sel.innerHTML='';
+  s.voices.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.label;sel.appendChild(o);});
+  sel.value=s.EDGE_VOICE;
+  $('#mVoice').textContent=voiceShort(s.EDGE_VOICE);
+  $('#persona').value=s.PERSONA_BASE||'';
+  $('#wake').value=s.WAKE_PHRASE||'edith';
+  $('#conf').value=s.WAKE_CONFIDENCE;$('#confOut').textContent=(+s.WAKE_CONFIDENCE).toFixed(1);
+  $('#sil').value=s.WAKE_SILENCE_MS;$('#silOut').textContent=s.WAKE_SILENCE_MS;
+  const spd=parseInt((s.EDGE_RATE||'+0%'))||0;$('#spd').value=spd;$('#spdOut').textContent=(spd>0?'+':'')+spd+'%';
+  toggles={WAKE_FOLLOWUP:!!s.WAKE_FOLLOWUP,ENABLE_SCREEN:!!s.ENABLE_SCREEN,ENABLE_WEATHER:!!s.ENABLE_WEATHER};
+  document.querySelectorAll('.sw[data-k]').forEach(sw=>sw.classList.toggle('on',toggles[sw.dataset.k]));
+}
+
+function collect(){
+  const spd=parseInt($('#spd').value)||0;
+  return {EDGE_VOICE:$('#voice').value,WAKE_PHRASE:$('#wake').value.trim().toLowerCase(),
+    PERSONA_BASE:$('#persona').value,WAKE_CONFIDENCE:parseFloat($('#conf').value),
+    WAKE_SILENCE_MS:parseInt($('#sil').value),EDGE_RATE:(spd>0?'+':'')+spd+'%',
+    WAKE_FOLLOWUP:toggles.WAKE_FOLLOWUP,ENABLE_SCREEN:toggles.ENABLE_SCREEN,ENABLE_WEATHER:toggles.ENABLE_WEATHER};
+}
+async function save(){await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())});}
+
+$('#conf').oninput=e=>$('#confOut').textContent=(+e.target.value).toFixed(1);
+$('#sil').oninput=e=>$('#silOut').textContent=e.target.value;
+$('#spd').oninput=e=>{const v=+e.target.value;$('#spdOut').textContent=(v>0?'+':'')+v+'%';};
+$('#voice').onchange=e=>$('#mVoice').textContent=voiceShort(e.target.value);
+document.querySelectorAll('.sw[data-k]').forEach(sw=>sw.onclick=()=>{toggles[sw.dataset.k]=!toggles[sw.dataset.k];sw.classList.toggle('on',toggles[sw.dataset.k]);});
+
+$('#saveBtn').onclick=async()=>{await save();toast('Settings saved · restart to apply');};
+$('#restartBtn').onclick=async()=>{await save();await api('/api/stop',{method:'POST'});setTimeout(async()=>{await api('/api/start',{method:'POST'});toast('Saved · EDITH restarting');poll();},700);};
+$('#startBtn').onclick=async()=>{await api('/api/start',{method:'POST'});toast('Waking EDITH…');setTimeout(poll,800);};
+$('#stopBtn').onclick=async()=>{await api('/api/stop',{method:'POST'});toast('EDITH standing down');setTimeout(poll,400);};
+
+async function loadMemory(){const m=await api('/api/memory');$('#memory').value=m.text||'';}
+$('#memSave').onclick=async()=>{await api('/api/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:$('#memory').value})});toast('Memory saved');};
+
+loadSettings();loadMemory();poll();setInterval(poll,1600);
+</script>
+</body>
+</html>

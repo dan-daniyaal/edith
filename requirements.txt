@@ -1,0 +1,9 @@
+﻿# Local voice EDITH â€” Python dependencies
+faster-whisper      # speech-to-text (ears), runs locally on CPU
+sounddevice         # microphone capture
+numpy               # audio array handling
+edge-tts            # neural voice (Aria) â€” primary mouth, free, needs internet
+pygame              # plays the neural voice audio
+pyttsx3             # offline SAPI voice â€” fallback mouth when offline
+mss                 # screen capture for on-demand vision
+vosk               # 'Hey EDITH' wake word — offline phrase spotting, no signup
